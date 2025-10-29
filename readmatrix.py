@@ -1,79 +1,83 @@
-import gp_random_inconsistency
-import max_refined
-import inconsistency
-import gp_max_inconsistency
-import qualitonumber
+import missing_gp_number
 import numpy as np
-
-#import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt 
 import time
 
-# def process_matrix(matrix):
-#     """Dummy function to process a matrix. Replace with your actual function."""
-#     print(f"Processing matrix:\n{matrix}\n")
+def process_matrix(matrix):
+    """Dummy function to process a matrix. Replace with your actual function."""
+    print(f"Processing matrix:\n{matrix}\n")
 
 
-def read_symbolic_matrices_from_file(filename):
+import numpy as np
+
+def read_matrices_from_file(filename):
+    """Reads matrices from a file and returns a list of numpy arrays with dtype=object, preserving '?'."""
     matrices = []
-    matrix = []
-
-    with open(filename, 'r', encoding='utf-8') as file:
+    with open(filename, 'r') as file:
+        matrix = []
         for line in file:
             line = line.strip()
             if line.startswith("Matrix"):
                 if matrix:
-                    matrices.append(np.array(matrix))  # ⬅️ convert here
+                    matrices.append(np.array(matrix, dtype=object))
                     matrix = []
             elif line:
-                matrix.append(line.split())
+                row = [x if x == "?" else float(x) for x in line.split()]
+                matrix.append(row)
         if matrix:
-            matrices.append(np.array(matrix))  # ⬅️ and here too
-    
+            matrices.append(np.array(matrix, dtype=object))
     return matrices
 
-# Example usage:
-filename = "d:/research/code/Qualitative/matrices5.txt"  # Your uploaded file
-matrices = read_symbolic_matrices_from_file(filename)
+filename = "d:/research/code/Missing-Information/51matrices52.txt"
+matrices = read_matrices_from_file(filename)
 num_generation=[]
 all_min_inconsistencies = []
 i=0
 for matrix in matrices:
-    min_inconsistencies, num_generation_each =max_refined.main(matrix)
+    min_inconsistencies, num_generation_each = missing_gp_number.main(matrix,[])
     #print("min: ",min_inconsistencies)
     all_min_inconsistencies.append(min_inconsistencies)
     num_generation.append(num_generation_each)
     i+=1
     print(i,num_generation_each)#print(i,main_gp.main(matrix)[1])
-print(num_generation)
+print(num_generation)    
+if all_min_inconsistencies:
+    #print (all_min_inconsistencies[0])
+    generations = range(len(all_min_inconsistencies[0])) 
+    #print (len(all_min_inconsistencies[0])) 
+    plt.plot(generations, all_min_inconsistencies[0], 'b')
+    plt.xticks(generations[::5])
+    plt.yticks(fontsize=13, fontname= 'DejaVu Serif',fontweight= 'bold')
+    plt.xticks(fontsize=13,fontname= 'DejaVu Serif', fontweight= 'bold')  
+    plt.xlabel("\nGenerations",fontdict={'fontsize': 17, 'fontweight': 'bold', 'fontname': 'DejaVu Serif'})
+    plt.ylabel("Fitness (Inconsistency)", fontdict={'fontsize': 17, 'fontweight': 'bold', 'fontname': 'DejaVu Serif'})
+    plt.title('\nEvolution of Fitness Over Number of Generations\n', 
+        fontdict={'fontsize': 22, 'fontweight': 'bold', 'fontname': 'DejaVu Serif'})
+    #plt.title(f"Evolutionary Algorithm on RMatrix")
+    plt.show()
 
 
-#gp_max
-#data=[27, 10, 7, 11, 9, 14, 17, 12, 16, 23, 12, 19, 14, 21, 15, 15, 13, 13, 25, 25, 9, 36, 10, 14, 28, 14, 14, 5, 18, 18, 22, 50, 43, 14, 22, 42, 8, 34, 22, 44, 12, 8, 3, 28, 12, 93, 24, 9, 18, 18, 4, 78, 102, 14, 85, 3, 59, 18, 20, 21, 5, 26, 5, 10, 20, 9, 15, 10, 88, 16, 16, 12, 4, 12, 15, 17, 29, 15, 3, 45, 22, 44, 27, 19, 14, 45, 14, 54, 9, 13, 6, 41, 11, 12, 6, 18, 24, 16, 12, 8]
-#data_refined=[25, 10, 7, 8, 8, 10, 22, 16, 12, 21, 11, 15, 16, 22, 11, 14, 12, 11, 24, 22, 10, 36, 8, 14, 22, 11, 10, 5, 16, 13, 19, 28, 35, 14, 18, 22, 7, 55, 17, 41, 13, 9, 3, 21, 9, 58, 24, 8, 16, 14, 4, 53, 64, 12, 47, 3, 52, 18, 20, 10, 6, 16, 5, 10, 11, 8, 15, 10, 58, 13, 21, 10, 3, 11, 14, 13, 32, 11, 3, 29, 18, 37, 20, 14, 15, 33, 14, 44, 9, 10, 5, 23, 11, 13, 7, 10, 14, 17, 11, 8]
-#data_withoutcross=[24, 11, 7, 10, 9, 15, 26, 16, 17, 14, 12, 29, 25, 21, 14, 15, 16, 11, 21, 15, 13, 27, 10, 19, 14, 13, 11, 6, 22, 15, 30, 17, 31, 21, 20, 20, 9, 33, 24, 31, 16, 10, 4, 17, 13, 48, 19, 9, 16, 18, 5, 37, 38, 13, 28, 4, 25, 20, 19, 14, 6, 26, 5, 18, 14, 9, 19, 16, 27, 22, 21, 13, 4, 15, 12, 21, 39, 9, 3, 31, 22, 28, 15, 14, 12, 31, 16, 26, 9, 10, 6, 44, 10, 11, 8, 13, 18, 14, 15, 13]
-#number of equal=0
-#near refined=0
-#near to equal=2
-#
+#5matricenumber51 with childe[i,j]<1
+#data=[38, 21, 31, 26, 7, 17, 28, 24, 23, 26, 30, 34, 41, 18, 26, 7, 27, 28, 31, 26, 19, 24, 28, 38, 15, 45, 14, 7, 30, 35, 20, 32, 18, 12, 29, 24, 22, 25, 38, 26, 28, 35, 28, 24, 24, 40, 20, 21, 41, 47, 38, 22, 25, 6, 19, 5, 38, 17, 39, 55, 39, 30, 52, 42, 43, 36, 34, 17, 32, 55, 16, 10, 31, 14, 43, 31, 20, 21, 22, 16, 51, 26, 32, 18, 21, 19, 46, 23, 18, 17, 26, 39, 50, 57, 38, 40, 23, 49, 4, 20]
 
-#gp_random
-#data=[55, 25, 27, 18, 32, 28, 25, 41, 28, 38, 60, 31, 131, 94, 20, 30, 37, 67, 60, 54, 21, 63, 23, 46, 21, 35, 23, 8, 31, 16, 58, 66, 59, 33, 73, 75, 12, 175, 54, 122, 35, 14, 3, 73, 43, 93, 37, 21, 50, 27, 6, 124, 200, 194, 81, 4, 98, 84, 46, 18, 11, 64, 8, 22, 45, 29, 52, 30, 200, 47, 56, 39, 9, 30, 32, 35, 200, 35, 2, 42, 41, 155, 64, 61, 25, 40, 89, 127, 20, 16, 14, 65, 33, 27, 11, 35, 36, 48, 20, 26]
-#data_refined=[66, 33, 18, 18, 22, 20, 25, 85, 20, 26, 31, 33, 41, 44, 20, 28, 24, 24, 48, 32, 14, 56, 25, 29, 37, 24, 26, 10, 32, 15, 47, 37, 124, 29, 53, 54, 19, 54, 53, 198, 19, 11, 5, 35, 29, 101, 27, 11, 28, 26, 6, 56, 186, 43, 101, 3, 121, 40, 36, 31, 8, 57, 9, 25, 41, 27, 38, 30, 190, 39, 139, 37, 10, 29, 42, 20, 49, 14, 3, 39, 28, 41, 59, 31, 25, 61, 78, 82, 14, 21, 16, 50, 38, 21, 11, 35, 26, 31, 23, 29]
-#number of equal= 0
-#near refined=6
-#near to equal=4
+#5matricenumber51 without childe[i,j]<1
+#data=[8, 11, 10, 8, 3, 10, 8, 6, 9, 11, 8, 9, 15, 9, 17, 8, 16, 10, 11, 10, 8, 10, 12, 13, 10, 12, 6, 5, 12, 15, 10, 10, 7, 7, 11, 13, 9, 12, 14, 8, 13, 15, 7, 10, 7, 13, 4, 4, 13, 15, 12, 11, 13, 1, 10, 3, 16, 7, 14, 12, 19, 10, 18, 16, 15, 15, 12, 5, 13, 18, 9, 4, 14, 8, 19, 8, 9, 6, 9, 11, 13, 10, 10, 10, 11, 6, 16, 13, 13, 7, 13, 16, 17, 19, 11, 17, 6, 16, 3, 10]
 
+#5matricenumber71 without childe[i,j]<1
+#data=[45, 54, 40, 39, 34, 34, 53, 46, 38, 55, 40, 41, 49, 37, 46, 37, 46, 55, 57, 47, 38, 43, 50, 43, 41, 50, 50, 55, 52, 55, 44, 50, 55, 47, 41, 66, 45, 45, 47, 48, 40, 43, 44, 52, 40, 46, 57, 49, 35, 36, 38, 39, 56, 49, 53, 43, 48, 46, 37, 42, 35, 41, 44, 54, 45, 53, 57, 34, 50, 47, 39, 50, 47, 59, 28, 57, 42, 39, 53, 42, 54, 38, 54, 41, 38, 53, 52, 41, 45, 41, 47, 50, 49, 39, 51, 38, 46, 49, 59, 55]
 
-#to number
-#data=[23, 16, 16, 19, 19, 18, 21, 17, 20, 20, 22, 20, 24, 22, 23, 16, 19, 21, 22, 21, 16, 27, 25, 21, 17, 18, 18, 14, 22, 18, 26, 20, 24, 22, 20, 21, 15, 26, 23, 30, 17, 10, 8, 23, 21, 31, 19, 18, 21, 18, 12, 30, 24, 16, 27, 10, 26, 25, 23, 18, 12, 23, 13, 18, 21, 17, 21, 19, 25, 23, 23, 20, 11, 17, 18, 24, 27, 17, 11, 25, 23, 24, 19, 20, 14, 24, 22, 24, 14, 19, 15, 26, 20, 15, 18, 17, 17, 18, 20, 17]
-#number of equal=0
-#near to equal=12
+#5matricenumber72 without childe[i,j]<1
+#data= [39, 50, 49, 49, 49, 37, 31, 41, 36, 46, 46, 43, 38, 51, 46, 30, 34, 51, 29, 37, 39, 39, 32, 46, 53, 32, 44, 46, 31, 28, 54, 55, 34, 58, 43, 50, 40, 35, 39, 42, 46, 50, 36, 33, 47, 46, 42, 34, 43, 57, 32, 45, 53, 41, 35, 43, 37, 44, 33, 41, 46, 28, 51, 35, 30, 37, 34, 43, 39, 46, 38, 30, 37, 47, 43, 40, 45, 40, 39, 45, 56, 38, 49, 42, 49, 46, 33, 44, 51, 45, 24, 29, 55, 38, 42, 45, 42, 41, 50, 50]
 
+#5matricenumber73 without childe[i,j]<1
+#data= [40, 28, 36, 27, 31, 39, 35, 37, 38, 41, 33, 38, 46, 32, 35, 41, 24, 35, 31, 32, 34, 33, 38, 36, 36, 33, 40, 40, 35, 38, 44, 47, 35, 33, 30, 47, 17, 35, 22, 32, 35, 36, 39, 44, 41, 34, 41, 39, 42, 35, 39, 28, 39, 38, 27, 30, 35, 32, 35, 36, 44, 46, 46, 37, 41, 37, 33, 40, 33, 34, 51, 32, 30, 37, 42, 41, 43, 38, 46, 44, 26, 37, 51, 31, 28, 32, 33, 31, 30, 40, 41, 30, 30, 28, 34, 39, 31, 37, 49, 40]
 
-#inconsistency
-#data=[16, 24, 16, 12, 12, 17, 17, 15, 16, 17, 19, 19, 19, 14, 22, 17, 12, 15, 18, 20, 20, 22, 26, 22, 17, 20, 16, 7, 17, 13, 27, 16, 21, 21, 24, 18, 10, 22, 23, 27, 21, 8, 15, 17, 16, 23, 15, 14, 18, 15, 14, 23, 17, 12, 24, 14, 21, 15, 22, 13, 17, 24, 7, 17, 24, 14, 22, 14, 17, 14, 20, 16, 6, 23, 14, 21, 23, 11, 11, 18, 14, 23, 21, 17, 11, 18, 25, 18, 8, 12, 8, 24, 21, 21, 8, 11, 14, 17, 17, 12]
-#number of equal=0
-#near to equal=70
+#5matricenumber52 without childe[i,j]<1
+#data=[9, 9, 3, 6, 8, 5, 15, 8, 2, 5, 13, 4, 8, 10, 6, 11, 6, 6, 2, 2, 12, 10, 8, 5, 4, 4, 9, 8, 11, 4, 7, 8, 4, 7, 6, 13, 7, 7, 7, 5, 10, 10, 3, 7, 10, 11, 13, 12, 6, 6, 9, 10, 4, 13, 5, 8, 4, 12, 11, 13, 12, 5, 7, 6, 5, 10, 6, 4, 11, 9, 11, 1, 10, 16, 6, 5, 2, 7, 4, 11, 2, 10, 14, 3, 6, 10, 10, 5, 4, 5, 5, 3, 10, 11, 2, 13, 6, 5, 5, 9]
+
+#5matricenumber51 same without childe[i,j]<1
+#data= [8, 5, 7, 4, 9, 11, 19, 10, 17, 10, 14, 14, 14, 13, 11, 10, 10, 13, 19, 11, 15, 12, 9, 11, 6, 7, 6, 18, 5, 6, 11, 12, 4, 12, 9, 9, 10, 10, 11, 13, 15, 9, 6, 3, 7, 15, 10, 6, 20, 22, 11, 5, 13, 12, 7, 9, 15, 17, 10, 12, 12, 4, 6, 7, 18, 11, 13, 12, 11, 13, 8, 7, 13, 14, 8, 6, 8, 12, 9, 9, 10, 21, 13, 7, 11, 12, 11, 15, 8, 7, 8, 10, 15, 13, 9, 17, 11, 12, 9, 13]
 
 
-
+#5matricenumber52 same without childe[i,j]<1
+#data= [5, 4, 2, 4, 9, 6, 10, 6, 10, 6, 2, 10, 10, 6, 11, 5, 6, 13, 12, 10, 9, 7, 8, 4, 7, 5, 3, 16, 6, 5, 10, 7, 3, 12, 4, 5, 11, 3, 3, 11, 12, 5, 5, 4, 7, 8, 9, 2, 12, 16, 7, 5, 8, 8, 5, 8, 10, 13, 2, 13, 8, 4, 5, 2, 10, 7, 10, 6, 8, 9, 5, 5, 10, 11, 7, 4, 2, 12, 6, 6, 8, 14, 13, 5, 9, 6, 7, 11, 4, 5, 5, 10, 14, 11, 3, 13, 10, 9, 5, 10]
