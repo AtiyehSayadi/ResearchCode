@@ -87,29 +87,53 @@ def create_child(matrix,n):
     
 #     return inconsistency_matrix
 
+# def compute_inconsistency_matrix(Q):
+#     """
+#     Optimized computation of the inconsistency matrix for a qualitative pairwise comparison matrix Q.
+#     Exploits symmetry to reduce computation (only computes upper triangle).
+#     """
+#     n = Q.shape[0]
+#     inconsistency_matrix = np.zeros((n, n), dtype=int)
+
+#     for i in range(n):
+#         for j in range(i + 1, n):  # Only upper triangle
+#             aij = Q[i, j]
+#             violation_count = 0
+#             for k in range(n):
+#                 if k == i or k == j:
+#                     continue
+#                 ajk = Q[j, k]
+#                 aik_expected = rules.check_rules(aij, ajk)
+#                 if Q[i, k] not in aik_expected:
+#                     violation_count += 1
+
+#             inconsistency_matrix[i, j] = violation_count
+#             inconsistency_matrix[j, i] = violation_count  # Mirror to lower triangle
+
+#     return inconsistency_matrix
+
 def compute_inconsistency_matrix(Q):
     """
-    Optimized computation of the inconsistency matrix for a qualitative pairwise comparison matrix Q.
-    Exploits symmetry to reduce computation (only computes upper triangle).
+    Computes the inconsistency matrix for a qualitative pairwise comparison matrix Q.
     """
     n = Q.shape[0]
     inconsistency_matrix = np.zeros((n, n), dtype=int)
 
     for i in range(n):
         for j in range(i + 1, n):  # Only upper triangle
-            aij = Q[i, j]
             violation_count = 0
             for k in range(n):
                 if k == i or k == j:
                     continue
-                ajk = Q[j, k]
-                aik_expected = rules.check_rules(aij, ajk)
-                if Q[i, k] not in aik_expected:
+                akj = Q[k, j]
+                aik=Q[i,k]
+                aij_expected = rules.check_rules(aik, akj)
+                if Q[i, j] not in aij_expected:
                     violation_count += 1
 
             inconsistency_matrix[i, j] = violation_count
             inconsistency_matrix[j, i] = violation_count  # Mirror to lower triangle
-
+    
     return inconsistency_matrix
 
 def select_top_population(population,inconsitency,n=0.5):
@@ -137,13 +161,15 @@ def select_intact_generation(population,n=0.2):
 
 def crossover(parent1, parent2):
     size = parent1.shape[0]
+    # print(size)
     child = np.copy(parent1)
     crossover_point = np.random.randint(size)
+    # print(crossover_point)
     for i in range(crossover_point):
         for j in range(crossover_point):
             child[i, j] = parent2[i, j]
-            if j != i:  
-                child[j, i] = inverse[child[i, j]]
+            # if j != i:  
+            #     child[j, i] = inverse[child[i, j]]
     return child
 
 def select_crossover(cross,n=0):
@@ -190,11 +216,11 @@ def main(matrix):
     population_size=1000
     current_generation= create_child(matrix,population_size)
     number_generaration=0
-    min_inconsistency= 100
+    min_inconsistency= float('inf')
     best_min=[]
     best_matrix=[]
     all_inconsistency= []
-    while number_generaration<200 and min_inconsistency != 0:
+    while number_generaration<100 and min_inconsistency != 0:
         k= 0
         inconsistency= []
         while k < population_size:
@@ -211,6 +237,7 @@ def main(matrix):
         # print(best_min)
         top= select_top_population(current_generation,inconsistency)
         next_generation= select_intact_generation(top)
+        # print("next_ge",len(next_generation))
         k=0
         cross_child=[]
         while k< population_size*0.9:
@@ -227,15 +254,20 @@ def main(matrix):
         next_generation=next_generation+select_crossover(cross_child)+select_mutate(cross_child)
         #next_generation=next_generation+select_mutate(cross_child)
         current_generation=next_generation
+        # print("next_ge",len(current_generation))
         number_generaration+=1
         #print(best_min)
 
     #print(matrix,best_matrix,min_inconsistency,number_generaration)
     # print(best_matrix,number_generaration,min_inconsistency)
     # print(best_min)
-    #print(all_inconsistency)
-    print(best_matrix)
-    return best_min,number_generaration
+    # #print(all_inconsistency)
+    print("best maatrix=",best_matrix)
+    # print(compute_inconsistency_matrix(best_matrix))
+    count_inconsistency=0
+    if np.any(compute_inconsistency_matrix(np.array(best_matrix)) != 0) and number_generaration<200:
+        count_inconsistency +=1
+    return best_matrix,best_min,number_generaration,count_inconsistency
 
 # matrix =np.array( [
 #     ["≈", "⊏", "≻"],
@@ -248,16 +280,16 @@ def main(matrix):
 #     ["⊐", "≈", "⊂"],
 #     ["<", "⊃", "≈"]
 # ])
-Q_example = np.array([
-    ["≈", "⊂", "≈", "⊏", "⊃", "≈", "<", "⊐"],
-    ["⊃", "≈", ">", "≈", "≻", "⊐", "≈", ">"],
-    ["≈", "<", "≈", "⊂", "⊐", "⊏", "<", "⊏"],
-    ["⊐", "≈", "⊃", "≈", "≻", "≈", "⊏", ">"],
-    ["⊂", "≺", "⊏", "≺", "≈", "<", "≺", "≈"],
-    ["≈", "⊏", "⊐", "≈", ">", "≈", "⊂", "⊃"],
-    [">", "≈", ">", "⊐", "≻", "⊃", "≈", "≻"],
-    ["⊏", "<", "⊐", "<", "≈", "⊂", "≺", "≈"]
-])
+# Q_example = np.array([
+#     ["≈", "⊂", "≈", "⊏", "⊃", "≈", "<", "⊐"],
+#     ["⊃", "≈", ">", "≈", "≻", "⊐", "≈", ">"],
+#     ["≈", "<", "≈", "⊂", "⊐", "⊏", "<", "⊏"],
+#     ["⊐", "≈", "⊃", "≈", "≻", "≈", "⊏", ">"],
+#     ["⊂", "≺", "⊏", "≺", "≈", "<", "≺", "≈"],
+#     ["≈", "⊏", "⊐", "≈", ">", "≈", "⊂", "⊃"],
+#     [">", "≈", ">", "⊐", "≻", "⊃", "≈", "≻"],
+#     ["⊏", "<", "⊐", "<", "≈", "⊂", "≺", "≈"]
+# ])
 
 # matrix =np.array( [
 #     ["≈", "≻", "≺", "⊂", "⊐"],
@@ -266,9 +298,9 @@ Q_example = np.array([
 #     ["⊃", "⊂", "≺", "≈", "≺"],
 #     ["⊏", "<", "⊐", "≻", "≈"]
 # ])
-#children_matrices = create_child(matrix,10)
-#print(children_matrices)
-#print( main(Q_example))
-#print(compute_inconsistency_matrix(Q_example))
+# children_matrices = create_child(matrix,10)
+# print(children_matrices)
+# print(compute_inconsistency_matrix(Q_example))
+# print( main(Q_example))
+# print("a",crossover(matrix,Q_example))
 
-print(main(Q_example))
