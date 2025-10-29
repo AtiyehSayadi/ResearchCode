@@ -79,9 +79,9 @@ def compute_inconsistency_matrix(Q):
                     if k != i and k != j:
                         if Q[i, j] == "?" or Q[i, k] == "?" or Q[k, j] == "?":
                            continue
-                        aij = Q[i, j]
-                        ajk = Q[j, k]
-                        aik_expected = rules.check_rules(aij, ajk)
+                        akj = Q[k, j]
+                        aik=Q[i,k]
+                        aij_expected = rules.check_rules(aik, akj)
                         if Q[i, k] not in aik_expected:
                             violation_count += 1
                 
@@ -252,4 +252,5 @@ Q_example = np.array([
 #print(mutation(matrix,))
 
 print(compute_inconsistency_matrix(Q_example))
+
 print(main(Q_example,[(5,7),(7,5)]))
