@@ -43,20 +43,46 @@ def compute_inconsistency_matrix(Q):
 
     for i in range(n):
         for j in range(i + 1, n):  # Only upper triangle
-            aij = Q[i, j]
             violation_count = 0
             for k in range(n):
                 if k == i or k == j:
                     continue
-                ajk = Q[j, k]
-                aik_expected = rules.check_rules(aij, ajk)
-                if Q[i, k] not in aik_expected:
+                akj = Q[k, j]
+                aik=Q[i,k]
+                aij_expected = rules.check_rules(aik, akj)
+                if Q[i, j] not in aij_expected:
                     violation_count += 1
 
             inconsistency_matrix[i, j] = violation_count
             inconsistency_matrix[j, i] = violation_count  # Mirror to lower triangle
     
     return inconsistency_matrix
+
+# def compute_inconsistency_matrix(Q):
+#     """
+#     Computes the inconsistency matrix for a qualitative pairwise comparison matrix Q.
+#     """
+#     n = Q.shape[0]
+#     inconsistency_matrix = np.zeros((n, n), dtype=int)
+
+#     for i in range(n):
+#         for j in range(i + 1, n):  # Only upper triangle
+#             aij = Q[i, j]
+#             violation_count = 0
+#             for k in range(n):
+#                 if k == i or k == j:
+#                     continue
+#                 ajk = Q[j, k]
+#                 aik_expected = rules.check_rules(aij, ajk)
+#                 if Q[i, k] not in aik_expected:
+                    
+#                     violation_count += 1
+
+#             inconsistency_matrix[i, j] = violation_count
+#             inconsistency_matrix[j, i] = violation_count  # Mirror to lower triangle
+    
+#     return inconsistency_matrix
+
 
 def select_top_population(population,inconsitency,n=0.5):
     inconsistency1= inconsitency
@@ -141,7 +167,7 @@ def main(matrix):
     population_size=1000
     current_generation= create_child(matrix,population_size)
     number_generaration=0
-    min_inconsistency= 100
+    min_inconsistency= float('inf')
     best_min=[]
     best_matrix=[]
     all_inconsistency= []
@@ -181,8 +207,13 @@ def main(matrix):
     #print(best_matrix,number_generaration,min_inconsistency)
     # print(best_min)
     #print(all_inconsistency)
-    print(best_matrix)
-    return best_min,number_generaration
+    # print(best_matrix)
+    # print(best_matrix)
+    # print(compute_inconsistency_matrix(best_matrix))
+    # count_inconsistency=0
+    # if np.any(compute_inconsistency_matrix(np.array(best_matrix)) != 0) and number_generaration<200:
+    #     count_inconsistency +=1
+    return best_matrix,best_min,number_generaration
 
 # matrix =np.array( [
 #     ["≈", "⊏", "≻"],
@@ -214,7 +245,7 @@ Q_example = np.array([
 # ])
 #children_matrices = create_child(matrix,10)
 #print(children_matrices)
-print(main(Q_example))
+# print(main(Q_example))
 #print(mutation(matrix,))
 
-#print(compute_inconsistency_matrix(Q_example))
+# print(compute_inconsistency_matrix(Q_example))
